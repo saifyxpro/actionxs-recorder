@@ -435,31 +435,128 @@ body {
     font-size: var(--font-size-base);
 }
 
-/* Export button states */
+/* Enhanced Export button styles for AdsPower RPA */
+.export-btn {
+    background: linear-gradient(135deg, var(--success-color) 0%, #2d8f47 100%);
+    color: var(--text-inverse);
+    font-weight: var(--font-weight-semibold);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    min-height: 36px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(52, 168, 83, 0.25);
+    letter-spacing: 0.25px;
+    flex: 1;
+    max-width: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.export-btn span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.export-btn:hover:not(:disabled):not(.loading) {
+    background: linear-gradient(135deg, #2d8f47 0%, var(--success-color) 100%);
+    box-shadow: 0 4px 12px rgba(52, 168, 83, 0.35);
+    transform: translateY(-1px);
+}
+
+.export-btn:active:not(:disabled):not(.loading) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(52, 168, 83, 0.3);
+}
+
+/* Export button count badge */
+.export-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.export-btn:hover::after {
+    transform: translateX(100%);
+}
+
+/* Export button loading state */
 .export-btn.loading {
-    background-color: var(--text-disabled);
+    background: linear-gradient(135deg, var(--text-disabled) 0%, #666 100%);
     cursor: wait;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .export-btn.loading::before {
-    content: '';
-    width: 14px;
-    height: 14px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-right: var(--spacing-xs);
+    display: none;
 }
 
+/* Export button success state */
 .export-btn.success {
-    background-color: var(--success-color);
+    background: linear-gradient(135deg, var(--success-color) 0%, #2d8f47 100%);
     color: var(--text-inverse);
+    animation: successPulse 0.6s ease-out;
 }
 
 .export-btn.success::before {
     content: '✓';
     margin-right: var(--spacing-xs);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* RPA Export specific styling */
+.export-btn[data-rpa="true"] {
+    background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.25);
+    border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.export-btn[data-rpa="true"]:hover:not(:disabled):not(.loading) {
+    background: linear-gradient(135deg, #004d99 0%, #0066cc 100%);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+    border-color: rgba(0, 102, 204, 0.3);
+}
+
+/* AdsPower branding for export button */
+.export-btn .rpa-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-size-xs);
+    opacity: 0.9;
+    margin-left: 4px;
+}
+
+.export-btn .rpa-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    margin-left: 4px;
 }
 
 @keyframes spin {
@@ -486,12 +583,71 @@ body {
     background: linear-gradient(90deg, transparent, var(--border-light), transparent);
 }
 
+/* Enhanced Controls layout for better export button display */
 .controls {
     display: flex;
     gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
     flex-wrap: wrap;
     justify-content: center;
+    align-items: stretch;
+}
+
+/* Export button gets priority in layout */
+.controls .export-btn {
+    flex: 2;
+    min-width: 180px;
+    order: 1;
+}
+
+.controls .restart-btn,
+.controls .stop-btn,
+.controls .pause-btn {
+    flex: 1;
+    min-width: 70px;
+    max-width: 90px;
+}
+
+.controls .restart-btn {
+    order: 2;
+}
+
+.controls .stop-btn {
+    order: 3;
+}
+
+.controls .pause-btn {
+    order: 3;
+}
+
+/* Responsive controls for smaller screens */
+@media (max-width: 350px) {
+    .controls {
+        gap: var(--spacing-xs);
+        flex-direction: column;
+    }
+    
+    .controls .export-btn {
+        order: 1;
+        flex: none;
+        width: 100%;
+        min-width: none;
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .controls .restart-btn,
+    .controls .stop-btn,
+    .controls .pause-btn {
+        flex: 1;
+        min-width: none;
+        max-width: none;
+    }
+    
+    .controls .secondary-controls {
+        display: flex;
+        gap: var(--spacing-xs);
+        width: 100%;
+    }
 }
 
 .footer-info {
@@ -745,12 +901,13 @@ body {
 
 .loading-spinner {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border: 2px solid transparent;
     border-top: 2px solid currentColor;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    flex-shrink: 0;
 }
 
 .disabled {

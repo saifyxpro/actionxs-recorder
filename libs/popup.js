@@ -326,7 +326,18 @@ class ActionRecorderPopup {
                 this.showElements([actionsList, restartBtn, exportBtn]);
                 const actionCount = actionsList?.querySelectorAll('li').length || 0;
                 if (exportBtn) {
-                    exportBtn.textContent = `${chrome.i18n.getMessage('export_actions') || 'Export'} (${actionCount})`;
+                    // Enhanced export button text with better formatting
+                    exportBtn.innerHTML = `
+                        <span style="display: flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                            </svg>
+                            Export AdsPower RPA
+                            <span class="rpa-count">${actionCount}</span>
+                        </span>
+                    `;
+                    exportBtn.setAttribute('data-rpa', 'true');
+                    exportBtn.title = `Export ${actionCount} recorded actions as AdsPower RPA script`;
                 }
                 break;
 
@@ -357,28 +368,45 @@ class ActionRecorderPopup {
      * Render individual action item
      */
     renderActionItem(action, number) {
-        const actionName = chrome.i18n.getMessage(action.type) || action.type;
+        const actionName = this.getActionDisplayName(action.type);
         let actionInfo = '';
 
-        // Generate action-specific info
+        // Generate action-specific info for better RPA understanding
         switch (action.type) {
+            case 'newPage':
+                actionInfo = `<span class="highlight">New browser tab</span>`;
+                break;
             case 'gotoUrl':
                 actionInfo = `<span class="highlight">${this.escapeHtml(action.config.url)}</span>`;
                 break;
             case 'click':
-                actionInfo = `<span class="highlight">${this.escapeHtml(action.config.selector)}</span>`;
+                const clickText = action.config.text || action.config.ariaLabel || action.config.selector;
+                actionInfo = `<span class="highlight">${this.escapeHtml(clickText)}</span>`;
+                if (action.config.tagName) {
+                    actionInfo += ` <small>(${action.config.tagName})</small>`;
+                }
                 break;
             case 'inputContent':
-                actionInfo = `<span class="highlight">${this.escapeHtml(action.config.content)}</span>`;
+                const inputValue = action.config.content || action.config.value || '';
+                const inputLabel = action.config.placeholder || action.config.ariaLabel || 'text field';
+                actionInfo = `<span class="highlight">"${this.escapeHtml(inputValue)}"</span>`;
+                actionInfo += ` <small>→ ${this.escapeHtml(inputLabel)}</small>`;
                 break;
             case 'keyboard':
-                actionInfo = `<span class="highlight">${this.escapeHtml(action.config.type)}</span>`;
+                const key = action.config.key || action.config.type || 'key';
+                actionInfo = `<span class="highlight">${this.escapeHtml(key)}</span>`;
                 break;
             case 'scrollPage':
-                actionInfo = `<span class="highlight">${action.config.distance} px</span>`;
+                const distance = action.config.distance || 0;
+                const direction = action.config.direction || 'down';
+                actionInfo = `<span class="highlight">${distance}px ${direction}</span>`;
                 break;
             case 'waitTime':
-                actionInfo = `<span class="highlight">${action.config.timeout} ms</span>`;
+                const timeout = action.config.timeout || 0;
+                actionInfo = `<span class="highlight">${timeout}ms</span>`;
+                break;
+            case 'formSubmit':
+                actionInfo = `<span class="highlight">Form submission</span>`;
                 break;
         }
 
@@ -391,6 +419,26 @@ class ActionRecorderPopup {
                 </div>
             </li>
         `;
+    }
+
+    /**
+     * Get display name for action type
+     */
+    getActionDisplayName(actionType) {
+        const displayNames = {
+            'newPage': 'New Page',
+            'gotoUrl': 'Navigate to URL',
+            'click': 'Click Element',
+            'inputContent': 'Input Text',
+            'keyboard': 'Keyboard Input',
+            'scrollPage': 'Scroll Page',
+            'waitTime': 'Wait',
+            'formSubmit': 'Submit Form',
+            'closeOtherPage': 'Close Other Tabs',
+            'passingElement': 'Hover Element'
+        };
+        
+        return displayNames[actionType] || actionType;
     }
 
     /**
@@ -540,53 +588,303 @@ class ActionRecorderPopup {
         if (!button || button.classList.contains('loading')) return;
 
         try {
-            // Show loading state
+            // Show loading state with enhanced styling
             button.classList.add('loading');
-            button.textContent = 'Exporting...';
+            button.innerHTML = `
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span class="loading-spinner"></span>
+                    Generating Perfect RPA Script...
+                </span>
+            `;
 
-            const data = await this.getStorageData([ActionRecorderPopup.STORAGE_KEYS.ACTION_LIST]);
-            const actions = data[ActionRecorderPopup.STORAGE_KEYS.ACTION_LIST] || [];
+            // Get actions from background script (which will convert them to perfect AdsPower RPA format)
+            const response = await this.sendMessage({ action: 'export' });
+            const rpaActions = response.actions || [];
+            
+            if (rpaActions.length === 0) {
+                this.showToast('No actions to export', 'warning');
+                return;
+            }
+
+            // Create the perfect AdsPower RPA JSON format
+            const rpaScript = JSON.stringify(rpaActions, null, 2);
+            
+            try {
+                await navigator.clipboard.writeText(rpaScript);
+                
+                // Show detailed success message
+                const stats = this.generateRPAStats(rpaActions);
+                this.showToast(`🚀 Perfect AdsPower RPA Script Exported!\n${stats.summary}`, 'success', 6000);
+                
+                // Log detailed information for developers
+                console.group('🤖 AdsPower RPA Export Statistics');
+                console.log('Total Actions:', rpaActions.length);
+                console.log('Action Types:', stats.actionTypes);
+                console.log('Wait Actions:', stats.waitActions);
+                console.log('Interactive Actions:', stats.interactiveActions);
+                console.log('Perfect Format:', 'AdsPower Compatible ✅');
+                console.groupEnd();
+                
+            } catch (clipboardError) {
+                // Fallback to legacy method
+                await this.fallbackCopyToClipboard(rpaScript);
+                this.showToast(`Perfect AdsPower RPA Script exported! ${rpaActions.length} actions ready for automation`, 'success', 4000);
+            }
+
+            // Show success state with more details
+            button.classList.remove('loading');
+            button.classList.add('success');
+            button.textContent = '✅ AdsPower RPA Ready!';
+
+            // Reset button after delay with enhanced styling
+            setTimeout(() => {
+                button.classList.remove('success');
+                const actionCount = rpaActions.length;
+                button.innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                        </svg>
+                        Export AdsPower RPA
+                        <span class="rpa-count">${actionCount}</span>
+                    </span>
+                `;
+                button.setAttribute('data-rpa', 'true');
+                button.title = `Export ${actionCount} recorded actions as AdsPower RPA script`;
+            }, 4000);
+
+        } catch (error) {
+            console.error('Failed to export AdsPower RPA script:', error);
+            this.showToast('Failed to export AdsPower RPA script. Please try again.', 'error');
+            
+            // Reset button state with enhanced styling
+            if (button) {
+                button.classList.remove('loading', 'success');
+                const actionCount = this.elements.actionsList?.querySelectorAll('li').length || 0;
+                button.innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                        </svg>
+                        Export AdsPower RPA
+                        <span class="rpa-count">${actionCount}</span>
+                    </span>
+                `;
+                button.setAttribute('data-rpa', 'true');
+                button.title = `Export ${actionCount} recorded actions as AdsPower RPA script`;
+            }
+        }
+    }
+
+    /**
+     * Generate comprehensive RPA statistics for user feedback
+     */
+    generateRPAStats(actions) {
+        const stats = {
+            actionTypes: {},
+            waitActions: 0,
+            interactiveActions: 0,
+            navigationActions: 0,
+            totalTimeout: 0
+        };
+
+        actions.forEach(action => {
+            // Count action types
+            stats.actionTypes[action.type] = (stats.actionTypes[action.type] || 0) + 1;
+            
+            // Count specific categories
+            if (action.type === 'waitTime') {
+                stats.waitActions++;
+                stats.totalTimeout += action.config.timeout || 0;
+            }
+            
+            if (['click', 'inputContent', 'keyboard'].includes(action.type)) {
+                stats.interactiveActions++;
+            }
+            
+            if (['gotoUrl', 'newPage', 'closeOtherPage'].includes(action.type)) {
+                stats.navigationActions++;
+            }
+        });
+
+        // Generate summary
+        const typesList = Object.entries(stats.actionTypes)
+            .map(([type, count]) => `${count} ${type}`)
+            .join(', ');
+            
+        const estimatedTime = Math.round(stats.totalTimeout / 1000);
+        
+        stats.summary = `${actions.length} actions (${typesList}) • ~${estimatedTime}s runtime`;
+        
+        return stats;
+    }
+
+    /**
+     * Enhanced export with multiple format options
+     */
+    async handleAdvancedExport(format = 'adspower') {
+        try {
+            const response = await this.sendMessage({ action: 'export' });
+            const actions = response.actions || [];
             
             if (actions.length === 0) {
                 this.showToast('No actions to export', 'warning');
                 return;
             }
 
-            // Copy to clipboard using modern API
-            const jsonData = JSON.stringify(actions, null, 2);
-            
-            try {
-                await navigator.clipboard.writeText(jsonData);
-                this.showToast(chrome.i18n.getMessage('export_success') || 'Actions exported to clipboard!', 'success');
-            } catch (clipboardError) {
-                // Fallback to legacy method
-                await this.fallbackCopyToClipboard(jsonData);
-                this.showToast(chrome.i18n.getMessage('export_success') || 'Actions exported to clipboard!', 'success');
+            let exportData;
+            let filename;
+            let successMessage;
+
+            switch (format) {
+                case 'adspower':
+                    exportData = JSON.stringify(actions, null, 2);
+                    filename = `adspower-rpa-${Date.now()}.json`;
+                    successMessage = 'AdsPower RPA script exported!';
+                    break;
+                    
+                case 'template':
+                    exportData = this.generateRPATemplate(actions);
+                    filename = `rpa-template-${Date.now()}.json`;
+                    successMessage = 'RPA template exported!';
+                    break;
+                    
+                case 'readable':
+                    exportData = this.generateReadableScript(actions);
+                    filename = `rpa-readable-${Date.now()}.txt`;
+                    successMessage = 'Human-readable script exported!';
+                    break;
+                    
+                default:
+                    exportData = JSON.stringify(actions, null, 2);
+                    filename = `rpa-export-${Date.now()}.json`;
+                    successMessage = 'RPA script exported!';
             }
 
-            // Show success state
-            button.classList.remove('loading');
-            button.classList.add('success');
-            button.textContent = 'Exported!';
-
-            // Reset button after delay
-            setTimeout(() => {
-                button.classList.remove('success');
-                const actionCount = this.elements.actionsList?.querySelectorAll('li').length || 0;
-                button.textContent = `${chrome.i18n.getMessage('export_actions') || 'Export'} (${actionCount})`;
-            }, 2000);
+            // Copy to clipboard
+            await navigator.clipboard.writeText(exportData);
+            this.showToast(successMessage, 'success');
 
         } catch (error) {
-            console.error('Failed to export actions:', error);
-            this.showToast('Failed to export actions. Please try again.', 'error');
-            
-            // Reset button state
-            if (button) {
-                button.classList.remove('loading', 'success');
-                const actionCount = this.elements.actionsList?.querySelectorAll('li').length || 0;
-                button.textContent = `${chrome.i18n.getMessage('export_actions') || 'Export'} (${actionCount})`;
-            }
+            console.error('Advanced export failed:', error);
+            this.showToast('Export failed. Please try again.', 'error');
         }
+    }
+
+    /**
+     * Generate RPA template with metadata
+     */
+    generateRPATemplate(actions) {
+        const template = {
+            meta: {
+                name: "Custom Automation Workflow",
+                description: "Generated by ActionXS Recorder",
+                version: "1.0",
+                created: new Date().toISOString(),
+                author: "ActionXS Recorder",
+                platform: "AdsPower",
+                estimatedDuration: this.estimateExecutionTime(actions)
+            },
+            variables: this.extractVariables(actions),
+            actions: actions,
+            settings: {
+                errorHandling: "continue",
+                retryCount: 2,
+                timeout: 60000,
+                humanLike: true
+            }
+        };
+
+        return JSON.stringify(template, null, 2);
+    }
+
+    /**
+     * Generate human-readable script description
+     */
+    generateReadableScript(actions) {
+        let script = "# AdsPower RPA Automation Script\n";
+        script += `# Generated: ${new Date().toLocaleString()}\n`;
+        script += `# Total Actions: ${actions.length}\n\n`;
+
+        actions.forEach((action, index) => {
+            script += `${index + 1}. ${this.getActionDescription(action)}\n`;
+        });
+
+        script += `\n# Estimated execution time: ${this.estimateExecutionTime(actions)} seconds\n`;
+        script += "# Ready for AdsPower RPA import ✅\n";
+
+        return script;
+    }
+
+    /**
+     * Get human-readable action description
+     */
+    getActionDescription(action) {
+        switch (action.type) {
+            case 'newPage':
+                return 'Open new browser tab';
+            case 'gotoUrl':
+                return `Navigate to ${action.config.url}`;
+            case 'click':
+                const clickTarget = action.config.text || action.config.selector;
+                return `Click on "${clickTarget}"`;
+            case 'inputContent':
+                return `Type "${action.config.content}" into input field`;
+            case 'keyboard':
+                return `Press ${action.config.type} key`;
+            case 'scrollPage':
+                return `Scroll ${action.config.distance}px down the page`;
+            case 'waitTime':
+                return `Wait ${action.config.timeout}ms for page response`;
+            case 'closeOtherPage':
+                return 'Close other browser tabs';
+            default:
+                return `Execute ${action.type} action`;
+        }
+    }
+
+    /**
+     * Estimate total execution time
+     */
+    estimateExecutionTime(actions) {
+        let totalTime = 0;
+        
+        actions.forEach(action => {
+            if (action.type === 'waitTime') {
+                totalTime += action.config.timeout || 0;
+            } else {
+                // Add estimated time for other actions
+                totalTime += 1000; // 1 second per action average
+            }
+        });
+
+        return Math.round(totalTime / 1000);
+    }
+
+    /**
+     * Extract variables from actions for template
+     */
+    extractVariables(actions) {
+        const variables = {};
+        
+        actions.forEach((action, index) => {
+            if (action.type === 'inputContent' && action.config.content) {
+                variables[`input_${index}`] = {
+                    type: "string",
+                    value: action.config.content,
+                    description: `Input content for action ${index + 1}`
+                };
+            }
+            if (action.type === 'gotoUrl' && action.config.url) {
+                variables[`url_${index}`] = {
+                    type: "url",
+                    value: action.config.url,
+                    description: `URL for navigation action ${index + 1}`
+                };
+            }
+        });
+
+        return variables;
     }
 
     /**

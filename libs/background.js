@@ -353,15 +353,24 @@ class ActionRecorderService {
             // Update status back to recording
             await this.updateStatus(ActionRecorderService.STATUS.RECORDING);
             
-            // Add wait time for main frame navigation
+            // Add RPA-specific actions for main frame navigation
             if (frameId === 0) {
+                // Add close other pages action (common in RPA workflows)
+                this.updateRecordedActions({
+                    type: 'closeOtherPage',
+                    config: { timestamp: Date.now() }
+                });
+
+                // Add wait time after navigation (important for page loading)
                 this.updateRecordedActions({
                     type: 'waitTime',
                     config: {
                         timeout: 5000,
                         timeoutType: 'randomInterval',
-                        timeoutMin: 1000,
-                        timeoutMax: 10000
+                        timeoutMin: 3000,
+                        timeoutMax: 8000,
+                        remark: "",
+                        timestamp: Date.now()
                     }
                 });
             }
@@ -463,6 +472,469 @@ class ActionRecorderService {
     }
 
     /**
+     * Convert recorded actions to perfect AdsPower RPA format
+     */
+    convertToRPAFormat(actions) {
+        if (!Array.isArray(actions) || actions.length === 0) {
+            return [];
+        }
+
+        const rpaActions = [];
+        let lastAction = null;
+        let lastTimestamp = null;
+        let actionCounter = 0;
+
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            const currentTimestamp = action.config?.timestamp || Date.now();
+            
+            // Calculate time difference for wait actions
+            if (lastTimestamp && currentTimestamp > lastTimestamp) {
+                const timeDiff = currentTimestamp - lastTimestamp;
+                if (timeDiff > 2000) { // Add wait if more than 2 seconds
+                    const waitAction = this.generateIntelligentWaitAction(timeDiff, lastAction, action);
+                    if (waitAction) {
+                        rpaActions.push(waitAction);
+                        actionCounter++;
+                    }
+                }
+            }
+
+            // Convert action to perfect AdsPower RPA format
+            const rpaAction = this.convertActionToAdsPowerRPA(action, lastAction, actionCounter);
+            if (rpaAction) {
+                if (Array.isArray(rpaAction)) {
+                    rpaActions.push(...rpaAction);
+                    actionCounter += rpaAction.length;
+                } else {
+                    rpaActions.push(rpaAction);
+                    actionCounter++;
+                }
+            }
+
+            lastAction = action;
+            lastTimestamp = currentTimestamp;
+        }
+
+        // Add final professional wait
+        if (rpaActions.length > 0) {
+            const finalWait = {
+                type: "waitTime",
+                config: {
+                    timeoutType: "randomInterval",
+                    timeout: 5000,
+                    timeoutMin: 3000,
+                    timeoutMax: 8000,
+                    remark: "Final completion wait",
+                    executionDelay: 500
+                }
+            };
+            rpaActions.push(finalWait);
+        }
+
+        return rpaActions;
+    }
+
+    /**
+     * Convert single action to perfect AdsPower RPA format
+     */
+    convertActionToAdsPowerRPA(action, lastAction, actionIndex) {
+        if (!action || !action.type) return null;
+
+        const baseConfig = {
+            executionIndex: actionIndex,
+            timestamp: Date.now(),
+            remark: this.generateActionRemark(action)
+        };
+
+        switch (action.type) {
+            case 'newPage':
+                return {
+                    type: "newPage",
+                    config: {
+                        ...baseConfig,
+                        timeout: 10000,
+                        waitForComplete: true
+                    }
+                };
+
+            case 'gotoUrl':
+                return {
+                    config: {
+                        timeout: 30000,
+                        url: action.config.url,
+                        waitForLoad: true,
+                        retryOnFail: 2,
+                        ...baseConfig
+                    },
+                    type: "gotoUrl"
+                };
+
+            case 'click':
+                return this.convertClickToAdsPowerRPA(action, baseConfig);
+
+            case 'inputContent':
+                return this.convertInputToAdsPowerRPA(action, baseConfig);
+
+            case 'keyboard':
+                return this.convertKeyboardToAdsPowerRPA(action, baseConfig);
+
+            case 'scrollPage':
+                return this.convertScrollToAdsPowerRPA(action, lastAction, baseConfig);
+
+            case 'formSubmit':
+                return [
+                    {
+                        type: "keyboard",
+                        config: {
+                            type: "Enter",
+                            ...baseConfig,
+                            remark: "Form submission via Enter key"
+                        }
+                    },
+                    {
+                        type: "waitTime",
+                        config: {
+                            timeoutType: "randomInterval",
+                            timeout: 8000,
+                            timeoutMin: 5000,
+                            timeoutMax: 12000,
+                            remark: "Wait for form processing"
+                        }
+                    }
+                ];
+
+            case 'closeOtherPage':
+                return {
+                    type: "closeOtherPage",
+                    config: {
+                        ...baseConfig,
+                        excludeCurrent: true,
+                        confirmClose: false
+                    }
+                };
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Convert click action to perfect AdsPower RPA format
+     */
+    convertClickToAdsPowerRPA(action, baseConfig) {
+        const config = action.config || {};
+        
+        // Determine optimal selector strategy
+        let selectorRadio = "CSS";
+        let selector = config.selector || "";
+        
+        // Prefer TEXT selector for better reliability if we have meaningful text
+        if (config.text && config.text.trim() && config.text.length < 50) {
+            selectorRadio = "TEXT";
+            selector = config.text.trim();
+        }
+        
+        // Use ARIA label if available and more specific
+        if (config.ariaLabel && config.ariaLabel.trim() && !config.text) {
+            selectorRadio = "TEXT";
+            selector = config.ariaLabel.trim();
+        }
+
+        return {
+            config: {
+                button: "left",
+                selector: selector,
+                serial: 1,
+                type: "click",
+                selectorRadio: selectorRadio,
+                selectorType: "selector",
+                element: "",
+                serialType: "fixedValue",
+                serialMin: 1,
+                serialMax: 50,
+                timeout: 15000,
+                waitBeforeClick: 500,
+                retryOnFail: 2,
+                scrollIntoView: true,
+                ...baseConfig
+            },
+            type: "click"
+        };
+    }
+
+    /**
+     * Convert input action to perfect AdsPower RPA format
+     */
+    convertInputToAdsPowerRPA(action, baseConfig) {
+        const config = action.config || {};
+        const content = config.content || config.value || "";
+
+        return {
+            config: {
+                content: content,
+                intervals: this.calculateTypingSpeed(content),
+                selector: config.selector || "",
+                serial: 1,
+                selectorRadio: "CSS",
+                serialType: "fixedValue",
+                selectorType: "selector",
+                element: "",
+                serialMin: 1,
+                serialMax: 50,
+                isRandom: "0",
+                isClear: "1", // Clear field before typing
+                randomContent: content,
+                randomInputNum: {
+                    min: 0.5,
+                    max: 2.0
+                },
+                timeout: 20000,
+                waitBeforeInput: 300,
+                simulateHuman: true,
+                ...baseConfig
+            },
+            type: "inputContent"
+        };
+    }
+
+    /**
+     * Convert keyboard action to perfect AdsPower RPA format
+     */
+    convertKeyboardToAdsPowerRPA(action, baseConfig) {
+        const config = action.config || {};
+        const keyType = config.key || config.type || "Enter";
+        
+        return {
+            type: "keyboard",
+            config: {
+                type: keyType,
+                delay: 100,
+                waitAfter: 500,
+                ...baseConfig,
+                remark: `Keyboard input: ${keyType}`
+            }
+        };
+    }
+
+    /**
+     * Convert scroll action to perfect AdsPower RPA format
+     */
+    convertScrollToAdsPowerRPA(action, lastAction, baseConfig) {
+        const config = action.config || {};
+        let distance = config.distance || 300;
+        
+        // Use actual scroll position for more accuracy
+        if (config.scrollY !== undefined) {
+            distance = config.scrollY;
+        }
+
+        // Ensure minimum meaningful scroll distance
+        if (distance < 100) distance = 300;
+
+        return {
+            config: {
+                distance: Math.round(distance),
+                scrollType: "pixel",
+                type: "smooth",
+                rangeType: "window",
+                selectorRadio: "CSS",
+                selector: "",
+                serial: 1,
+                position: "bottom",
+                timeout: 10000,
+                waitAfterScroll: 1000,
+                randomWheelDistance: [100, 200],
+                randomWheelSleepTime: [800, 1500],
+                scrollSpeed: "medium",
+                ...baseConfig
+            },
+            type: "scrollPage"
+        };
+    }
+
+    /**
+     * Generate intelligent wait actions based on context
+     */
+    generateIntelligentWaitAction(timeDiff, lastAction, nextAction) {
+        // Convert milliseconds to reasonable wait times
+        let baseTimeout = Math.min(Math.max(timeDiff, 1000), 30000);
+        
+        // Context-aware timeout adjustments
+        if (lastAction?.type === 'gotoUrl' || lastAction?.type === 'newPage') {
+            baseTimeout = Math.max(baseTimeout, 5000); // Longer wait after navigation
+        }
+        
+        if (lastAction?.type === 'click' && nextAction?.type === 'inputContent') {
+            baseTimeout = Math.max(baseTimeout, 2000); // Wait for focus
+        }
+        
+        if (lastAction?.type === 'scrollPage') {
+            baseTimeout = Math.max(baseTimeout, 1500); // Wait for scroll completion
+        }
+
+        // Determine wait type based on timeout duration
+        const useRandomInterval = baseTimeout > 3000;
+        
+        if (useRandomInterval) {
+            const minTime = Math.floor(baseTimeout * 0.7);
+            const maxTime = Math.floor(baseTimeout * 1.4);
+            
+            return {
+                type: "waitTime",
+                config: {
+                    timeoutType: "randomInterval",
+                    timeout: baseTimeout,
+                    timeoutMin: minTime,
+                    timeoutMax: maxTime,
+                    remark: this.generateWaitRemark(lastAction, nextAction),
+                    humanLike: true
+                }
+            };
+        } else {
+            return {
+                config: {
+                    timeout: baseTimeout,
+                    timeoutMax: baseTimeout + 1000,
+                    timeoutMin: Math.max(baseTimeout - 500, 500),
+                    timeoutType: "fixedValue",
+                    remark: this.generateWaitRemark(lastAction, nextAction),
+                    precision: "high"
+                },
+                type: "waitTime"
+            };
+        }
+    }
+
+    /**
+     * Calculate optimal typing speed based on content
+     */
+    calculateTypingSpeed(content) {
+        if (!content) return 200;
+        
+        const length = content.length;
+        
+        // Shorter content = faster typing
+        if (length < 10) return 150;
+        if (length < 30) return 200;
+        if (length < 100) return 300;
+        
+        // Longer content = more varied speed
+        return 400;
+    }
+
+    /**
+     * Generate descriptive remarks for actions
+     */
+    generateActionRemark(action) {
+        const remarks = {
+            'newPage': 'Open new browser tab',
+            'gotoUrl': `Navigate to ${action.config?.url || 'URL'}`,
+            'click': `Click on ${action.config?.text || action.config?.selector || 'element'}`,
+            'inputContent': `Type "${action.config?.content || 'text'}"`,
+            'keyboard': `Press ${action.config?.key || action.config?.type || 'key'}`,
+            'scrollPage': `Scroll ${action.config?.distance || 300}px down`,
+            'waitTime': 'Wait for page/element loading',
+            'closeOtherPage': 'Close other browser tabs',
+            'formSubmit': 'Submit form data'
+        };
+        
+        return remarks[action.type] || `Execute ${action.type}`;
+    }
+
+    /**
+     * Generate contextual wait remarks
+     */
+    generateWaitRemark(lastAction, nextAction) {
+        if (lastAction?.type === 'gotoUrl') return 'Wait for page loading';
+        if (lastAction?.type === 'click' && nextAction?.type === 'inputContent') return 'Wait for element focus';
+        if (lastAction?.type === 'scrollPage') return 'Wait for scroll completion';
+        if (lastAction?.type === 'inputContent') return 'Wait for input processing';
+        if (lastAction?.type === 'keyboard') return 'Wait for action response';
+        
+        return 'Natural human-like pause';
+    }
+
+    /**
+     * Add smart wait times between actions
+     */
+    addSmartWaitTimes(rpaActions) {
+        const actionsWithWaits = [];
+        
+        for (let i = 0; i < rpaActions.length; i++) {
+            const action = rpaActions[i];
+            actionsWithWaits.push(action);
+            
+            // Add wait after certain actions
+            const nextAction = rpaActions[i + 1];
+            if (nextAction && this.shouldAddWaitAfter(action, nextAction)) {
+                const waitAction = this.generateSmartWaitAction(action, nextAction);
+                if (waitAction) actionsWithWaits.push(waitAction);
+            }
+        }
+        
+        return actionsWithWaits;
+    }
+
+    /**
+     * Determine if wait should be added after action
+     */
+    shouldAddWaitAfter(currentAction, nextAction) {
+        if (!currentAction || !nextAction) return false;
+        
+        // Add wait after navigation
+        if (currentAction.type === 'gotoUrl') return true;
+        
+        // Add wait after form submission
+        if (currentAction.type === 'keyboard' && currentAction.config?.type === 'Enter') return true;
+        
+        // Add wait after clicks on navigation elements
+        if (currentAction.type === 'click' && 
+            (currentAction.config?.selector?.includes('a[') || 
+             currentAction.config?.selector?.includes('button'))) return true;
+        
+        // Add wait between different action types
+        if (currentAction.type !== nextAction.type) return true;
+        
+        return false;
+    }
+
+    /**
+     * Generate smart wait action based on context
+     */
+    generateSmartWaitAction(currentAction, nextAction) {
+        let baseTimeout = 3000; // Default 3 seconds
+        
+        // Longer wait for navigation
+        if (currentAction.type === 'gotoUrl' || 
+            (currentAction.type === 'click' && currentAction.config?.selector?.includes('a['))) {
+            baseTimeout = 8000;
+        }
+        
+        // Medium wait for form interactions
+        if (currentAction.type === 'inputContent' || 
+            (currentAction.type === 'keyboard' && currentAction.config?.type === 'Enter')) {
+            baseTimeout = 5000;
+        }
+        
+        // Short wait for UI interactions
+        if (currentAction.type === 'click') {
+            baseTimeout = 2000;
+        }
+
+        return {
+            type: "waitTime",
+            config: {
+                timeoutType: "randomInterval",
+                timeout: baseTimeout,
+                timeoutMin: Math.floor(baseTimeout * 0.8),
+                timeoutMax: Math.floor(baseTimeout * 1.5),
+                remark: ""
+            }
+        };
+    }
+
+    /**
      * Set up main message listener for popup and content script communications
      */
     setupMessageListener() {
@@ -524,7 +996,9 @@ class ActionRecorderService {
                             
                         case 'export':
                             const actions = await this.getRecordedActions();
-                            sendResponse({ success: true, actions: actions });
+                            const rpaActions = this.convertToRPAFormat(actions);
+                            const finalActions = this.addSmartWaitTimes(rpaActions);
+                            sendResponse({ success: true, actions: finalActions });
                             break;
                             
                         case 'getStatus':

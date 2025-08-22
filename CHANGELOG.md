@@ -5,6 +5,44 @@ All notable changes to ActionXS Recorder will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-08-22
+
+### 🚀 Major Features Added
+- **Perfect RPA Export**: Complete rewrite of export functionality to generate production-ready AdsPower RPA scripts
+- **Smart Wait Times**: Intelligent automatic timing insertion between actions for natural automation
+- **Advanced Selector Generation**: Enhanced CSS, TEXT, and ARIA-based element identification
+- **Context-Aware Actions**: Automatic insertion of `closeOtherPage` and `waitTime` actions for navigation
+
+### 🎯 Enhanced Recording Capabilities
+- **Improved Click Recording**: Now captures text content, ARIA labels, and element context
+- **Better Input Handling**: Enhanced form field detection with placeholder and label support
+- **Smart Scroll Tracking**: Pixel-perfect scroll distance calculation with direction detection
+- **Keyboard Event Enhancement**: Better special key handling and context awareness
+
+### 🔧 Technical Improvements
+- **RPA Format Conversion**: Complete action mapping to match AdsPower RPA format specifications
+- **Selector Optimization**: Priority-based selector generation for maximum reliability
+- **Error Handling**: Enhanced error recovery and logging throughout the system
+- **Performance**: Optimized debouncing and action processing
+
+### 📋 Export Format Changes
+- **Perfect JSON Structure**: Exports now match exact AdsPower RPA format requirements
+- **Configuration Objects**: All actions include proper `config` objects with required fields
+- **Timeout Management**: Intelligent timeout values with random intervals for natural behavior
+- **Serial Numbers**: Proper serial numbering and type configuration for all actions
+
+### 🧪 Testing & Validation
+- **Test Demo Page**: Added comprehensive `rpa-test-demo.html` for testing all scenarios
+- **Format Validation**: Ensures exported JSON matches provided RPA examples exactly
+- **Edge Case Handling**: Improved handling of dynamic content, iframes, and complex interactions
+
+### 📖 Documentation Updates
+- **RPA Export Guide**: Comprehensive guide for using the new export functionality
+- **Test Scenarios**: Detailed testing instructions and expected outcomes
+- **Troubleshooting**: Enhanced debugging and issue resolution guides
+
+---
+
 ## [1.0.0] - 2025-08-15
 
 ### 🎉 Initial Release

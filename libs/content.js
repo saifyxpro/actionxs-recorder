@@ -19,30 +19,94 @@ if (!window.ActionRecorderContentLoaded) {
             this.init();
         }
             
-        /**
-         * Get information about an element for recording
-         */
-        getElementInfo(element) {
-            try {
-                // Validate element is a proper DOM element
-                if (!element || !element.nodeType || element.nodeType !== Node.ELEMENT_NODE) {
-                    return { text: '', value: '', placeholder: '', title: '', ariaLabel: '' };
-                }
-                
-                return {
-                    text: this.getElementText(element),
-                    value: element.value || '',
-                    placeholder: element.placeholder || '',
-                    title: element.title || '',
-                    ariaLabel: (element.getAttribute && element.getAttribute('aria-label')) || ''
-                };
-            } catch (error) {
-                console.error('Error getting element info:', error);
-                return { text: '', value: '', placeholder: '', title: '', ariaLabel: '' };
+    /**
+     * Get comprehensive information about an element for perfect RPA recording
+     */
+    getElementInfo(element) {
+        try {
+            // Validate element is a proper DOM element
+            if (!element || !element.nodeType || element.nodeType !== Node.ELEMENT_NODE) {
+                return { text: '', value: '', placeholder: '', title: '', ariaLabel: '', role: '', type: '' };
+            }
+            
+            return {
+                text: this.getElementText(element),
+                value: element.value || '',
+                placeholder: element.placeholder || '',
+                title: element.title || '',
+                ariaLabel: (element.getAttribute && element.getAttribute('aria-label')) || '',
+                role: (element.getAttribute && element.getAttribute('role')) || '',
+                type: element.type || '',
+                tagName: element.tagName?.toLowerCase() || '',
+                className: element.className || '',
+                id: element.id || '',
+                name: element.name || '',
+                href: element.href || '',
+                alt: element.alt || '',
+                dataAttributes: this.getDataAttributes(element),
+                isVisible: this.isElementVisible(element),
+                isInteractive: this.isInteractiveElement(element),
+                boundingRect: this.getElementBounds(element)
+            };
+        } catch (error) {
+            console.error('Error getting element info:', error);
+            return { text: '', value: '', placeholder: '', title: '', ariaLabel: '', role: '', type: '' };
+        }
+    }
+
+    /**
+     * Get data attributes from element for better selector generation
+     */
+    getDataAttributes(element) {
+        const dataAttrs = {};
+        if (!element.attributes) return dataAttrs;
+        
+        for (let attr of element.attributes) {
+            if (attr.name.startsWith('data-')) {
+                dataAttrs[attr.name] = attr.value;
             }
         }
+        return dataAttrs;
+    }
 
-        /**
+    /**
+     * Check if element is visible on screen
+     */
+    isElementVisible(element) {
+        if (!element) return false;
+        
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        
+        return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            style.opacity !== '0' &&
+            rect.width > 0 &&
+            rect.height > 0
+        );
+    }
+
+    /**
+     * Get element bounding rectangle for positioning
+     */
+    getElementBounds(element) {
+        try {
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height,
+                top: rect.top,
+                left: rect.left,
+                right: rect.right,
+                bottom: rect.bottom
+            };
+        } catch (error) {
+            return { x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0 };
+        }
+    }        /**
          * Initialize content script
          */
         init() {
@@ -109,7 +173,7 @@ if (!window.ActionRecorderContentLoaded) {
     }
 
     /**
-     * Handle click events
+     * Handle click events with comprehensive RPA data capture
      */
     handleClick(event) {
         try {
@@ -117,15 +181,39 @@ if (!window.ActionRecorderContentLoaded) {
             const selector = this.generateSelector(element);
             const elementInfo = this.getElementInfo(element);
 
+            // Determine click context for better RPA conversion
+            const clickContext = this.analyzeClickContext(element, event);
+
             const action = {
                 type: 'click',
                 config: {
                     selector: selector,
                     tagName: element.tagName.toLowerCase(),
                     text: elementInfo.text,
+                    value: elementInfo.value,
+                    placeholder: elementInfo.placeholder,
+                    ariaLabel: elementInfo.ariaLabel,
+                    title: elementInfo.title,
+                    role: elementInfo.role,
+                    className: elementInfo.className,
+                    id: elementInfo.id,
+                    name: elementInfo.name,
+                    href: elementInfo.href,
+                    alt: elementInfo.alt,
+                    dataAttributes: elementInfo.dataAttributes,
+                    clickContext: clickContext,
                     coordinates: {
                         x: event.clientX,
-                        y: event.clientY
+                        y: event.clientY,
+                        pageX: event.pageX,
+                        pageY: event.pageY
+                    },
+                    elementBounds: elementInfo.boundingRect,
+                    modifiers: {
+                        ctrlKey: event.ctrlKey,
+                        altKey: event.altKey,
+                        shiftKey: event.shiftKey,
+                        metaKey: event.metaKey
                     },
                     timestamp: Date.now()
                 }
@@ -135,6 +223,60 @@ if (!window.ActionRecorderContentLoaded) {
         } catch (error) {
             console.error('Error handling click:', error);
         }
+    }
+
+    /**
+     * Analyze click context for better RPA understanding
+     */
+    analyzeClickContext(element, event) {
+        const context = {
+            type: 'general',
+            priority: 'normal',
+            expectedOutcome: 'interaction',
+            retryable: true
+        };
+
+        // Analyze element type
+        const tagName = element.tagName.toLowerCase();
+        
+        if (tagName === 'a') {
+            context.type = 'navigation';
+            context.expectedOutcome = 'pageChange';
+            context.priority = 'high';
+        } else if (tagName === 'button') {
+            context.type = 'action';
+            context.expectedOutcome = 'stateChange';
+            context.priority = 'high';
+        } else if (tagName === 'input') {
+            const inputType = element.type?.toLowerCase();
+            if (inputType === 'submit' || inputType === 'button') {
+                context.type = 'formSubmit';
+                context.expectedOutcome = 'formProcessing';
+                context.priority = 'high';
+            } else {
+                context.type = 'focus';
+                context.expectedOutcome = 'inputReady';
+                context.priority = 'medium';
+            }
+        }
+
+        // Check for common UI patterns
+        if (element.classList.contains('btn') || 
+            element.classList.contains('button') ||
+            element.getAttribute('role') === 'button') {
+            context.type = 'action';
+            context.priority = 'high';
+        }
+
+        if (element.closest('form')) {
+            context.formRelated = true;
+        }
+
+        if (element.closest('[role="menu"]') || element.closest('.dropdown')) {
+            context.type = 'menuSelection';
+        }
+
+        return context;
     }
 
     /**
@@ -153,6 +295,8 @@ if (!window.ActionRecorderContentLoaded) {
                 return;
             }
 
+            const elementInfo = this.getElementInfo(element);
+
             const action = {
                 type: 'inputContent',
                 config: {
@@ -160,6 +304,9 @@ if (!window.ActionRecorderContentLoaded) {
                     content: value,
                     inputType: element.type || 'text',
                     tagName: element.tagName.toLowerCase(),
+                    placeholder: elementInfo.placeholder,
+                    ariaLabel: elementInfo.ariaLabel,
+                    title: elementInfo.title,
                     timestamp: Date.now()
                 }
             };
@@ -216,6 +363,7 @@ if (!window.ActionRecorderContentLoaded) {
                     scrollY: scrollData.y,
                     distance: Math.abs(scrollData.y - (this.lastScrollY || 0)),
                     target: scrollData.target,
+                    direction: scrollData.y > (this.lastScrollY || 0) ? 'down' : 'up',
                     timestamp: Date.now()
                 }
             };
@@ -335,7 +483,7 @@ if (!window.ActionRecorderContentLoaded) {
     }
 
     /**
-     * Generate CSS selector for element
+     * Generate CSS selector for element with RPA optimization
      */
     generateSelector(element) {
         try {
@@ -343,28 +491,99 @@ if (!window.ActionRecorderContentLoaded) {
                 return '';
             }
 
-            // Try ID first
+            // Try ID first - most reliable
             if (element.id) {
-                return `#${this.escapeSelector(element.id)}`;
+                const idSelector = `#${this.escapeSelector(element.id)}`;
+                // Verify uniqueness
+                if (document.querySelectorAll(idSelector).length === 1) {
+                    return idSelector;
+                }
+            }
+
+            // Try data attributes (common in SPAs)
+            const dataAttributes = ['data-testid', 'data-test', 'data-cy', 'data-automation'];
+            for (const attr of dataAttributes) {
+                const value = element.getAttribute(attr);
+                if (value) {
+                    const selector = `[${attr}="${this.escapeSelector(value)}"]`;
+                    if (document.querySelectorAll(selector).length === 1) {
+                        return selector;
+                    }
+                }
+            }
+
+            // Try name attribute for form elements
+            if (element.name) {
+                const nameSelector = `[name="${this.escapeSelector(element.name)}"]`;
+                if (document.querySelectorAll(nameSelector).length === 1) {
+                    return nameSelector;
+                }
             }
 
             // Try unique class combination
             if (element.className && typeof element.className === 'string') {
                 const classes = element.className.trim().split(/\s+/).filter(cls => cls);
                 if (classes.length > 0) {
+                    // Try full class combination
                     const classSelector = '.' + classes.map(cls => this.escapeSelector(cls)).join('.');
                     if (document.querySelectorAll(classSelector).length === 1) {
                         return classSelector;
                     }
+                    
+                    // Try single meaningful classes
+                    const meaningfulClasses = classes.filter(cls => 
+                        !cls.match(/^(ui-|css-|_|.*\d+.*|.*-\d+.*)/) && cls.length > 2
+                    );
+                    
+                    for (const cls of meaningfulClasses) {
+                        const singleClassSelector = `.${this.escapeSelector(cls)}`;
+                        if (document.querySelectorAll(singleClassSelector).length === 1) {
+                            return singleClassSelector;
+                        }
+                    }
                 }
             }
 
-            // Build path-based selector
+            // Try aria-label
+            const ariaLabel = element.getAttribute('aria-label');
+            if (ariaLabel) {
+                const ariaSelector = `[aria-label="${this.escapeSelector(ariaLabel)}"]`;
+                if (document.querySelectorAll(ariaSelector).length === 1) {
+                    return ariaSelector;
+                }
+            }
+
+            // Try role + accessible name combination
+            const role = element.getAttribute('role');
+            if (role) {
+                const roleSelector = `[role="${role}"]`;
+                const roleElements = document.querySelectorAll(roleSelector);
+                if (roleElements.length === 1) {
+                    return roleSelector;
+                }
+                
+                // Try role with aria-label
+                if (ariaLabel) {
+                    return `[role="${role}"][aria-label="${this.escapeSelector(ariaLabel)}"]`;
+                }
+            }
+
+            // Build path-based selector as fallback
             const path = [];
             let current = element;
 
             while (current && current.nodeType === Node.ELEMENT_NODE && current !== document.body) {
                 let selector = current.tagName.toLowerCase();
+                
+                // Add class if available and meaningful
+                if (current.className && typeof current.className === 'string') {
+                    const classes = current.className.trim().split(/\s+/).filter(cls => 
+                        cls && !cls.match(/^(ui-|css-|_|.*\d+.*|.*-\d+.*)/)
+                    );
+                    if (classes.length > 0) {
+                        selector += '.' + classes.slice(0, 2).map(cls => this.escapeSelector(cls)).join('.');
+                    }
+                }
                 
                 // Add index if there are siblings of the same type
                 const siblings = Array.from(current.parentNode?.children || [])
@@ -378,11 +597,22 @@ if (!window.ActionRecorderContentLoaded) {
                 path.unshift(selector);
                 current = current.parentElement;
                 
-                // Limit path length
-                if (path.length > 6) break;
+                // Limit path length for maintainability
+                if (path.length > 4) break;
             }
 
-            return path.join(' > ');
+            const finalSelector = path.join(' > ');
+            
+            // If we have a very generic selector, try to make it more specific
+            if (finalSelector.includes('div') || finalSelector.includes('span')) {
+                // Try adding text content for better specificity
+                const text = this.getElementText(element);
+                if (text && text.length < 50) {
+                    return finalSelector; // Return as is, text will be used for TEXT selector
+                }
+            }
+
+            return finalSelector || element.tagName?.toLowerCase() || 'unknown';
         } catch (error) {
             console.error('Error generating selector:', error);
             return element.tagName?.toLowerCase() || 'unknown';
