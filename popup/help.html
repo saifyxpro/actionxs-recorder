@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./help.css">
+    <title>ActionXS Recorder - User Guide & Documentation</title>
+    <meta name="description" content="Complete user guide for ActionXS Recorder Chrome extension - Learn how to record web interactions and create AdsPower RPA processes">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">ActionXS Recorder</h1>
+            <p class="subtitle">Comprehensive User Guide & Documentation</p>
+            <div class="version-info">Version 1.0.0</div>
+        </header>
+        
+        <main class="content">
+            <!-- Quick Start Section -->
+            <section class="section quick-start">
+                <h2>🚀 Quick Start</h2>
+                <div class="quick-steps">
+                    <div class="quick-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Click "Start Recording"</h4>
+                            <p>Open the extension popup and click the blue "Start Recording" button</p>
+                        </div>
+                    </div>
+                    <div class="quick-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Interact with Web Pages</h4>
+                            <p>Perform clicks, inputs, scrolling, and navigation on your target website</p>
+                        </div>
+                    </div>
+                    <div class="quick-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Export Your Actions</h4>
+                            <p>Click "Export" to copy recorded actions to clipboard for AdsPower RPA</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Instructions -->
+            <section class="section">
+                <h2>📋 Detailed Recording Instructions</h2>
+                <div class="step-group">
+                    <div class="step">
+                        <h3>Starting a Recording Session</h3>
+                        <ul>
+                            <li><strong>Click "Start Recording":</strong> This activates the recording mode</li>
+                            <li><strong>Monitor Status:</strong> Watch the status indicator in the extension popup</li>
+                            <li><strong>Begin Actions:</strong> Start interacting with your target website</li>
+                        </ul>
+                        <div class="note">
+                            <strong>💡 Tip:</strong> Ensure you're on the correct webpage before starting to record.
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>Supported Interactions</h3>
+                        <div class="interaction-grid">
+                            <div class="interaction-card">
+                                <div class="interaction-icon">🖱️</div>
+                                <h4>Click Events</h4>
+                                <p>Buttons, links, menus, checkboxes, radio buttons, and any clickable elements</p>
+                            </div>
+                            <div class="interaction-card">
+                                <div class="interaction-icon">⌨️</div>
+                                <h4>Text Input</h4>
+                                <p>Form fields, search boxes, text areas, and any input elements (passwords excluded for security)</p>
+                            </div>
+                            <div class="interaction-card">
+                                <div class="interaction-icon">📜</div>
+                                <h4>Page Scrolling</h4>
+                                <p>Automatic detection of page scrolling for element visibility and content loading</p>
+                            </div>
+                            <div class="interaction-card">
+                                <div class="interaction-icon">🔗</div>
+                                <h4>Navigation</h4>
+                                <p>Page transitions, URL changes, and form submissions with proper wait times</p>
+                            </div>
+                            <div class="interaction-card">
+                                <div class="interaction-icon">🎯</div>
+                                <h4>Hover Actions</h4>
+                                <p>Mouse hover events on interactive elements like dropdown menus</p>
+                            </div>
+                            <div class="interaction-card">
+                                <div class="interaction-icon">⏱️</div>
+                                <h4>Smart Waits</h4>
+                                <p>Automatic wait times for page loading and element availability</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>Recording Status Indicators</h3>
+                        <div class="status-examples">
+                            <div class="status-example">
+                                <span class="status recording">Recording</span>
+                                <p><strong>Active Recording:</strong> All interactions are being captured. The red pulsing indicator shows active recording state.</p>
+                            </div>
+                            <div class="status-example">
+                                <span class="status waiting">WAIT</span>
+                                <p><strong>Page Loading:</strong> Extension is waiting for page navigation to complete. Do not perform actions during this state.</p>
+                            </div>
+                            <div class="status-example">
+                                <span class="status paused">Paused</span>
+                                <p><strong>Recording Paused:</strong> Interactions are temporarily ignored. Resume when ready to continue recording.</p>
+                            </div>
+                        </div>
+                        <div class="important-note">
+                            <strong>⚠️ Important:</strong> After page navigation, always wait for the status to change from <kbd>WAIT</kbd> to <kbd>Recording</kbd> before continuing with interactions.
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Controls Reference -->
+            <section class="section">
+                <h2>🎛️ Recording Controls Reference</h2>
+                <div class="controls-grid">
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Start Recording</kbd>
+                            <span class="control-shortcut">Ctrl+R</span>
+                        </div>
+                        <p>Begins a new recording session. Clears any previous recordings and starts capturing interactions.</p>
+                    </div>
+                    
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Pause</kbd>
+                            <span class="control-shortcut">Space</span>
+                        </div>
+                        <p>Temporarily pauses recording. Use when you need to perform actions that shouldn't be included in automation (like opening developer tools).</p>
+                    </div>
+                    
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Resume</kbd>
+                            <span class="control-shortcut">Space</span>
+                        </div>
+                        <p>Resumes recording after being paused. Button automatically changes from "Pause" to "Resume" based on current state.</p>
+                    </div>
+                    
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Stop</kbd>
+                            <span class="control-shortcut">Ctrl+S</span>
+                        </div>
+                        <p>Ends the current recording session and makes recorded actions available for export and review.</p>
+                    </div>
+                    
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Export</kbd>
+                            <span class="control-shortcut">Ctrl+E</span>
+                        </div>
+                        <p>Copies all recorded actions to clipboard in JSON format, ready for importing into AdsPower RPA workflow.</p>
+                    </div>
+                    
+                    <div class="control-item">
+                        <div class="control-header">
+                            <kbd class="control-key">Restart</kbd>
+                            <span class="control-shortcut">Ctrl+Shift+R</span>
+                        </div>
+                        <p>Clears all recorded actions and starts fresh. This action cannot be undone, so use with caution.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- AdsPower Integration -->
+            <section class="section">
+                <h2>🔗 AdsPower RPA Integration</h2>
+                <div class="integration-steps">
+                    <div class="integration-step">
+                        <div class="step-icon">1️⃣</div>
+                        <div class="step-details">
+                            <h3>Complete Your Recording</h3>
+                            <p>Finish recording all necessary actions for your automation workflow. Review the action list to ensure all steps are captured correctly.</p>
+                            <ul>
+                                <li>Check that all clicks are recorded with proper selectors</li>
+                                <li>Verify input fields contain correct values</li>
+                                <li>Ensure page navigation steps include proper wait times</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="integration-step">
+                        <div class="step-icon">2️⃣</div>
+                        <div class="step-details">
+                            <h3>Export Actions to Clipboard</h3>
+                            <p>Click the "Export" button to copy your recorded actions in JSON format to the system clipboard.</p>
+                            <div class="code-preview">
+                                <h4>Export Format Preview:</h4>
+                                <pre><code>[
+  {
+    "type": "gotoUrl",
+    "config": {
+      "url": "https://example.com",
+      "timeout": 30000
+    }
+  },
+  {
+    "type": "click",
+    "config": {
+      "selector": "#login-button",
+      "text": "Sign In"
+    }
+  }
+]</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="integration-step">
+                        <div class="step-icon">3️⃣</div>
+                        <div class="step-details">
+                            <h3>Import into AdsPower RPA</h3>
+                            <p>Open AdsPower RPA interface and import your recorded actions:</p>
+                            <ol>
+                                <li>Navigate to the RPA workflow section</li>
+                                <li>Create a new automation process</li>
+                                <li>Select "Import" or "Import from JSON" option</li>
+                                <li>Paste the copied JSON data</li>
+                                <li>Review and customize imported actions as needed</li>
+                                <li>Test the automation before deploying</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="integration-step">
+                        <div class="step-icon">4️⃣</div>
+                        <div class="step-details">
+                            <h3>Test and Deploy</h3>
+                            <p>Before running your automation in production:</p>
+                            <ul>
+                                <li><strong>Test in safe environment:</strong> Run the automation on test data first</li>
+                                <li><strong>Verify selectors:</strong> Ensure element selectors work consistently</li>
+                                <li><strong>Check timing:</strong> Adjust wait times if pages load differently</li>
+                                <li><strong>Handle errors:</strong> Add error handling for failed actions</li>
+                                <li><strong>Monitor execution:</strong> Watch initial runs to catch any issues</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Best Practices -->
+            <section class="section">
+                <h2>💡 Best Practices & Pro Tips</h2>
+                <div class="tips-grid">
+                    <div class="tip success">
+                        <h4>✅ Element Selection</h4>
+                        <ul>
+                            <li>Click precisely on target elements</li>
+                            <li>Prefer elements with unique IDs or stable classes</li>
+                            <li>Avoid elements that change frequently (dynamic content)</li>
+                            <li>Test recorded selectors on different page loads</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip success">
+                        <h4>✅ Timing & Waits</h4>
+                        <ul>
+                            <li>Allow pages to fully load before continuing</li>
+                            <li>Wait for AJAX content to appear</li>
+                            <li>Don't rush through interactions</li>
+                            <li>Let the extension handle automatic wait times</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip warning">
+                        <h4>⚠️ Data Privacy</h4>
+                        <ul>
+                            <li>Password fields are automatically excluded</li>
+                            <li>Review recorded data before export</li>
+                            <li>Don't record sensitive personal information</li>
+                            <li>Use test accounts for automation development</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip info">
+                        <h4>🔧 Troubleshooting</h4>
+                        <ul>
+                            <li>Refresh the page if recording seems stuck</li>
+                            <li>Check browser console for error messages</li>
+                            <li>Ensure extension has proper permissions</li>
+                            <li>Try recording on simpler pages first</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip success">
+                        <h4>✅ Workflow Organization</h4>
+                        <ul>
+                            <li>Break complex processes into smaller recordings</li>
+                            <li>Record one logical workflow per session</li>
+                            <li>Document your automation process</li>
+                            <li>Keep recordings focused and concise</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tip info">
+                        <h4>🎯 Performance</h4>
+                        <ul>
+                            <li>Close unnecessary browser tabs while recording</li>
+                            <li>Disable other extensions that might interfere</li>
+                            <li>Use stable internet connection</li>
+                            <li>Avoid recording during heavy system load</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Troubleshooting -->
+            <section class="section">
+                <h2>🔧 Troubleshooting Common Issues</h2>
+                <div class="troubleshooting-list">
+                    <details class="faq-item">
+                        <summary>Recording doesn't start or stops unexpectedly</summary>
+                        <div class="faq-content">
+                            <p><strong>Possible causes and solutions:</strong></p>
+                            <ul>
+                                <li>Refresh the current page and try again</li>
+                                <li>Check if the page URL is supported (avoid chrome:// pages)</li>
+                                <li>Ensure the extension has proper permissions</li>
+                                <li>Try disabling other Chrome extensions temporarily</li>
+                                <li>Restart the browser if the issue persists</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Some clicks or inputs are not recorded</summary>
+                        <div class="faq-content">
+                            <p><strong>Common reasons and fixes:</strong></p>
+                            <ul>
+                                <li>The element might be inside an iframe (limited support)</li>
+                                <li>The element uses complex event handling</li>
+                                <li>Recording was paused during the action</li>
+                                <li>The action happened during page navigation (WAIT state)</li>
+                                <li>Try clicking more slowly and deliberately</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Export button doesn't work</summary>
+                        <div class="faq-content">
+                            <p><strong>Clipboard access issues:</strong></p>
+                            <ul>
+                                <li>Grant clipboard permissions to the extension</li>
+                                <li>Try clicking the export button again</li>
+                                <li>Check if other applications are using the clipboard</li>
+                                <li>Restart the browser and try again</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Recorded selectors don't work in AdsPower</summary>
+                        <div class="faq-content">
+                            <p><strong>Element selector issues:</strong></p>
+                            <ul>
+                                <li>The page structure might have changed</li>
+                                <li>Elements might be dynamically generated</li>
+                                <li>Try recording the action again more precisely</li>
+                                <li>Use browser developer tools to verify selectors</li>
+                                <li>Consider using more stable element attributes</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>ActionXS Recorder</h4>
+                    <p>Professional web interaction recording for RPA automation</p>
+                    <div class="footer-links">
+                        <a href="https://github.com/actionxs-recorder" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="footer-link github-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                            Open Source
+                        </a>
+                        <a href="https://buymeacoffee.com/saifyxpro" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="footer-link donate-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-.766-1.613a4.44 4.44 0 0 0-1.364-.861C16.877 2.71 15.982 2.5 15.1 2.5H8.9c-.882 0-1.777.21-2.854.775a4.44 4.44 0 0 0-1.364.861c-.378.45-.647 1.015-.766 1.613L3.784 6.415a7.57 7.57 0 0 0-.24 1.95c0 .69.12 1.39.359 2.05.299.83.765 1.59 1.373 2.24.608.65 1.353 1.18 2.193 1.57.84.39 1.753.59 2.69.59.937 0 1.85-.2 2.69-.59.84-.39 1.585-.92 2.193-1.57.608-.65 1.074-1.41 1.373-2.24.239-.66.359-1.36.359-2.05a7.57 7.57 0 0 0-.24-1.95zM12 18.5c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4zm0-6c-1.103 0-2 .897-2 2s.897 2 2 2 2-.897 2-2-.897-2-2-2z"/>
+                            </svg>
+                            Support Development
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Developer</h4>
+                    <p><strong>Created by Saifullah</strong></p>
+                    <p class="disclaimer">Unofficial AdsPower Extension</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <p>
+                        <a href="https://www.adspower.com/?source=actionxs_recorder" 
+                           target="_blank" rel="noopener noreferrer"
+                           class="resource-link">
+                            AdsPower RPA Platform
+                        </a>
+                    </p>
+                    <p class="version-info">v1.0.0 - Manifest V3</p>
+                </div>
+            </div>
+            
+            <!-- Bug Report & Feature Request Section -->
+            <div class="feedback-section">
+                <h3>🤝 Help Us Improve</h3>
+                <div class="feedback-buttons">
+                    <a href="https://github.com/saifyxpro/actionxs-recorder/issues/new?template=bug_report.md" 
+                       target="_blank" 
+                       class="feedback-btn bug-report-btn">
+                        <span class="btn-icon">🐛</span>
+                        <span class="btn-text">
+                            <strong>Report Bug</strong>
+                            <small>Found an issue? Let us know!</small>
+                        </span>
+                    </a>
+                    <a href="https://github.com/saifyxpro/actionxs-recorder/issues/new?template=feature_request.md" 
+                       target="_blank" 
+                       class="feedback-btn feature-request-btn">
+                        <span class="btn-icon">💡</span>
+                        <span class="btn-text">
+                            <strong>Request Feature</strong>
+                            <small>Have an idea? Share it!</small>
+                        </span>
+                    </a>
+                    <a href="https://github.com/saifyxpro/actionxs-recorder/discussions" 
+                       target="_blank" 
+                       class="feedback-btn discussion-btn">
+                        <span class="btn-icon">💬</span>
+                        <span class="btn-text">
+                            <strong>Join Discussion</strong>
+                            <small>Connect with the community</small>
+                        </span>
+                    </a>
+                    <a href="mailto:hello@saify.me" 
+                       class="feedback-btn contact-btn">
+                        <span class="btn-icon">📧</span>
+                        <span class="btn-text">
+                            <strong>Contact Developer</strong>
+                            <small>Direct email for urgent issues</small>
+                        </span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 ActionXS Recorder by <strong>Saify</strong>. Open source project for the community.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="help.js"></script>
+</body>
+</html>

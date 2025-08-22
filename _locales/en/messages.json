@@ -1,0 +1,86 @@
+{
+    "ext_name": {
+        "message": "ActionXS Recorder",
+        "description": "Name of the extension"
+    },
+    "ext_description": {
+        "message": "Record web page interactions and automatically generate AdsPower RPA processes",
+        "description": "Description of the extension"
+    },
+    "newPage": {
+        "message": "New Page",
+        "description": "Label for new page action"
+    },
+    "gotoUrl": {
+        "message": "Navigate",
+        "description": "Label for URL navigation action"
+    },
+    "passingElement": {
+        "message": "Hover",
+        "description": "Label for hover action"
+    },
+    "click": {
+        "message": "Click",
+        "description": "Label for click action"
+    },
+    "inputContent": {
+        "message": "Input",
+        "description": "Label for input action"
+    },
+    "keyboard": {
+        "message": "Keyboard",
+        "description": "Label for keyboard action"
+    },
+    "scrollPage": {
+        "message": "Scroll",
+        "description": "Label for scroll action"
+    },
+    "waitTime": {
+        "message": "Wait",
+        "description": "Label for wait action"
+    },
+    "recording": {
+        "message": "Recording",
+        "description": "Recording status text"
+    },
+    "paused": {
+        "message": "Paused",
+        "description": "Paused status text"
+    },
+    "no_actions": {
+        "message": "No recorded actions yet",
+        "description": "Empty state message"
+    },
+    "record_now": {
+        "message": "Start Recording",
+        "description": "Start recording button text"
+    },
+    "stop_recording": {
+        "message": "Stop",
+        "description": "Stop recording button text"
+    },
+    "pause_recording": {
+        "message": "Pause",
+        "description": "Pause recording button text"
+    },
+    "resume_recording": {
+        "message": "Resume",
+        "description": "Resume recording button text"
+    },
+    "export_actions": {
+        "message": "Export",
+        "description": "Export actions button text"
+    },
+    "restart_recording": {
+        "message": "Restart",
+        "description": "Restart recording button text"
+    },
+    "export_success": {
+        "message": "Actions exported to clipboard!",
+        "description": "Export success message"
+    },
+    "process_instruction": {
+        "message": "Please start your web interactions",
+        "description": "Instruction message for users"
+    }
+}

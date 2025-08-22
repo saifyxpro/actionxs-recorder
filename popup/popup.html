@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=350, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="./popup.css">
+    <title>ActionXS Recorder</title>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="title-section">
+                    <h1 class="title">
+                        ActionXS Recorder
+                        <div class="status-indicator" aria-live="polite">
+                            <span class="status-text recording hidden" data-i18n="recording">REC</span>
+                            <span class="status-text paused hidden" data-i18n="paused">PAUSE</span>
+                        </div>
+                    </h1>
+                </div>
+                <button class="help-btn" aria-label="Help" title="View help documentation">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zM8 4a.905.905 0 0 0-.9.995c.035.84.832 1.003.832 1.003s.77-.193.832-1.003A.905.905 0 0 0 8 4zM7.002 7v3.5c0 .5.5.5.998.5s1-.5 1-.5V7c0-.5-.5-.5-1-.5s-.998.5-.998.5z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <p class="empty-message" data-i18n="no_actions">No recorded actions yet</p>
+                    <button class="primary-btn record-btn" data-i18n="record_now">Start Recording</button>
+                </div>
+                
+                <ul class="actions-list hidden" role="list" aria-label="Recorded actions">
+                    <!-- Actions will be dynamically inserted here -->
+                </ul>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="controls" role="group" aria-label="Recording controls">
+                <button class="secondary-btn restart-btn hidden" data-i18n="restart_recording">Restart</button>
+                <button class="primary-btn export-btn hidden" data-i18n="export_actions">Export</button>
+                <button class="danger-btn stop-btn hidden" data-i18n="stop_recording">Stop</button>
+                <button class="secondary-btn pause-btn hidden" data-i18n="pause_recording">Pause</button>
+            </div>
+            <div class="footer-info">
+                <div class="footer-compact">
+                    <div class="footer-main">
+                        <a href="https://github.com/saifyxpro/actionxs-recorder" 
+                           target="_blank" 
+                           class="footer-link github-link"
+                           title="View source code">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                            Open Source
+                        </a>
+                        <span class="divider">•</span>
+                        <a href="https://buymeacoffee.com/saifyxpro" 
+                           target="_blank" 
+                           class="footer-link support-link"
+                           title="Support development">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.09 0 2.14-.18 3.12-.5l1.55 1.55c.29.29.77.29 1.06 0s.29-.77 0-1.06l-1.55-1.55c.32-.98.5-2.03.5-3.12 0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                            </svg>
+                            Support
+                        </a>
+                        <span class="divider">•</span>
+                        <a href="https://github.com/saifyxpro/actionxs-recorder/issues/new?template=bug_report.md" 
+                           target="_blank" 
+                           class="footer-link bug-link" 
+                           title="Report a bug">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2v-2zm0-8h2v6h-2V9z"/>
+                            </svg>
+                            Bug Report
+                        </a>
+                        <span class="divider">•</span>
+                        <a href="https://github.com/saifyxpro/actionxs-recorder/issues/new?template=feature_request.md" 
+                           target="_blank" 
+                           class="footer-link feature-link" 
+                           title="Request a feature">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Feature Request
+                        </a>
+                    </div>
+                    <div class="footer-adspower">
+                        <a href="https://www.actionxs.live" 
+                           target="_blank" 
+                           class="footer-link adspower-link" 
+                           title="AdsPower RPA Unofficial Extension">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            AdsPower RPA Extension
+                        </a>
+                    </div>
+                    <div class="footer-creator">
+                        <span class="creator-text">© 2025 • Created with ❤️ by <strong>Saify</strong></span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast hidden" role="alert" aria-live="assertive">
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="../libs/popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "default_locale": "en",
+    "short_name": "ActionXS",
+    "name": "__MSG_ext_name__",
+    "description": "__MSG_ext_description__",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "webNavigation",
+        "scripting",
+        "tabs"
+    ],
+    "host_permissions": [
+        "*://*/"
+    ],
+    "homepage_url": "https://www.adspower.net",
+    "offline_enabled": true,
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_title": "__MSG_ext_name__",
+        "default_icon": {
+            "16": "img/icon_16.png",
+            "32": "img/icon_32.png",
+            "48": "img/icon_48.png",
+            "128": "img/icon_128.png"
+        }
+    },
+    "background": {
+        "service_worker": "libs/background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://*/*"],
+            "js": ["libs/content.js"],
+            "run_at": "document_end",
+            "all_frames": true
+        }
+    ],
+    "icons": {
+        "16": "img/icon_16.png",
+        "32": "img/icon_32.png",
+        "48": "img/icon_48.png",
+        "128": "img/icon_128.png"
+    },
+    "options_page": "popup/help.html",
+    "web_accessible_resources": [
+        {
+            "resources": ["img/*"],
+            "matches": ["*://*/*"]
+        }
+    ]
+}
